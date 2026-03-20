@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recruiting Capacity Model 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid #ddddd8;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; color: #1a1a18; letter-spacing: -0.02em; }
+  .header p  { font-size: 13px; color: #6b6b67; margin-top: 4px; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; color: #6b6b67;
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;
+  }
+
+  .controls-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px; margin-bottom: 2rem;
+  }
+  .card {
+    background: #fff; border: 0.5px solid #ddddd8; border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .card-label { font-size: 12px; color: #6b6b67; margin-bottom: 8px; line-height: 1.4; }
+  .card-derived {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 4px;
+  }
+  .ctrl-row { display: flex; align-items: center; gap: 10px; }
+  .ctrl-row input[type=range] {
+    flex: 1; -webkit-appearance: none; height: 4px;
+    border-radius: 2px; background: #ddddd8; outline: none;
+  }
+  .ctrl-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: #1a1a18; cursor: pointer;
+  }
+  .ctrl-val { font-size: 15px; font-weight: 600; min-width: 42px; color: #1a1a18; text-align: right; }
+  .derived-val { font-size: 18px; font-weight: 600; color: #1a1a18; }
+  .derived-sub { font-size: 11px; color: #9b9b96; }
+
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; margin-bottom: 2rem;
+  }
+  .metric {
+    background: #fff; border: 0.5px solid #ddddd8; border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .metric-label { font-size: 12px; color: #6b6b67; margin-bottom: 4px; }
+  .metric-value { font-size: 26px; font-weight: 600; line-height: 1.15; color: #1a1a18; }
+  .metric-sub   { font-size: 12px; color: #6b6b67; margin-top: 3px; }
+  .metric.over .metric-value { color: #c0401a; }
+  .metric.ok   .metric-value { color: #0f6e56; }
+
+  hr { border: none; border-top: 0.5px solid #ddddd8; margin: 1.5rem 0; }
+
+  .table-wrap {
+    background: #fff; border: 0.5px solid #ddddd8; border-radius: 10px; overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    font-size: 11px; font-weight: 600; color: #6b6b67; text-align: left;
+    padding: 10px 14px; border-bottom: 0.5px solid #ddddd8;
+    background: #faf9f6; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 0.5px solid #ddddd8; color: #1a1a18; }
+  tbody tr.total-row td { background: #faf9f6; font-weight: 600; border-bottom: none; }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 5px;
+  }
+  .badge-ok   { background: #e1f5ee; color: #0a5c44; }
+  .badge-over { background: #faece7; color: #993c1d; }
+
+  .pos  { color: #c0401a; font-weight: 600; }
+  .neg  { color: #0f6e56; font-weight: 600; }
+  .zero { color: #6b6b67; font-weight: 600; }
+
+  .table-note {
+    font-size: 11px; color: #9b9b96; margin-top: 8px; font-style: italic;
+  }
+
+  .note {
+    font-size: 12px; color: #6b6b67; margin-top: 1.25rem; line-height: 1.8;
+    padding: 0.9rem 1.1rem; background: #fff; border: 0.5px solid #ddddd8;
+    border-radius: 10px;
+  }
+  .note strong { color: #1a1a18; font-weight: 600; }
+
+  @media (max-width: 640px) {
+    .controls-grid { grid-template-columns: 1fr; }
+    .metrics-grid  { grid-template-columns: 1fr 1fr; }
+    thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Recruiting Capacity Model — 2026</h1>
+    <p>Dynamic headcount planning tool &middot; VP, Talent Acquisition</p>
+  </div>
+
+  <div class="section-label">Headcount &amp; attrition</div>
+  <div class="controls-grid">
+    <div class="card">
+      <div class="card-label">Current employee headcount</div>
+      <div class="ctrl-row">
+        <input type="range" id="headcount" min="500" max="2000" step="50" value="1000">
+        <span class="ctrl-val" id="headcountVal">1,000</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Incremental roles</div>
+      <div class="ctrl-row">
+        <input type="range" id="growthHires" min="200" max="1200" step="25" value="600">
+        <span class="ctrl-val" id="growthHiresVal">600</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Annual attrition rate</div>
+      <div class="ctrl-row">
+        <input type="range" id="attritionPct" min="2" max="30" step="1" value="10">
+        <span class="ctrl-val" id="attritionPctVal">10%</span>
+      </div>
+    </div>
+    <div class="card card-derived">
+      <div>
+        <div class="card-label" style="margin-bottom:2px;">Total hires needed</div>
+        <div class="derived-val" id="totalHiresDisplay">700</div>
+      </div>
+      <div class="derived-sub" id="totalHiresBreakdown">600 incremental + 100 backfill</div>
+    </div>
+  </div>
+
+  <div class="section-label">Role mix</div>
+  <div class="controls-grid">
+    <div class="card">
+      <div class="card-label">% Technical roles (Eng, Design, Product)</div>
+      <div class="ctrl-row">
+        <input type="range" id="techPct" min="20" max="65" step="5" value="40">
+        <span class="ctrl-val" id="techPctVal">40%</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">% Operations roles</div>
+      <div class="ctrl-row">
+        <input type="range" id="opsPct" min="10" max="50" step="5" value="25">
+        <span class="ctrl-val" id="opsPctVal">25%</span>
+      </div>
+    </div>
+    <div class="card card-derived">
+      <div>
+        <div class="card-label" style="margin-bottom:2px;">% Business roles (G&amp;A, GTM, Mktg)</div>
+        <div class="derived-val" id="bizPctDisplay">35%</div>
+      </div>
+      <div class="derived-sub">Remainder of mix</div>
+    </div>
+  </div>
+
+  <div class="section-label">Throughput rates</div>
+  <div class="controls-grid">
+    <div class="card">
+      <div class="card-label">Technical hires per recruiter / quarter</div>
+      <div class="ctrl-row">
+        <input type="range" id="techRate" min="3" max="10" step="1" value="5">
+        <span class="ctrl-val" id="techRateVal">5</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Ops hires per recruiter / quarter</div>
+      <div class="ctrl-row">
+        <input type="range" id="opsRate" min="5" max="15" step="1" value="10">
+        <span class="ctrl-val" id="opsRateVal">10</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Business hires per recruiter / quarter</div>
+      <div class="ctrl-row">
+        <input type="range" id="bizRate" min="3" max="10" step="1" value="6">
+        <span class="ctrl-val" id="bizRateVal">6</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Summary</div>
+  <div class="metrics-grid" id="metrics"></div>
+
+  <hr>
+
+  <div class="section-label">Capacity by function</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Function</th>
+          <th>Recruiters (current)</th>
+          <th>Annual capacity</th>
+          <th>Hires needed</th>
+          <th>Recruiters needed</th>
+          <th>Recruiter delta</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <p class="table-note">Recruiter delta: negative = surplus (can flex out) &nbsp;&middot;&nbsp; positive = gap (needs coverage)</p>
+
+  <div class="note" id="note"></div>
+
+</div>
+<script>
+  var OFFER_ACCEPTANCE = 0.84;
+
+  ['headcount','growthHires','attritionPct','techPct','opsPct','techRate','opsRate','bizRate'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', render);
+  });
+
+  function fmt(n) { return n.toLocaleString(); }
+  function recNeeded(hires, rate) { return Math.ceil(hires / (rate * 4)); }
+  function deltaClass(d) { return d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero'; }
+  function deltaStr(d)   { return d > 0 ? '+' + d : '' + d; }
+
+  function render() {
+    var headcount    = +document.getElementById('headcount').value;
+    var growthHires  = +document.getElementById('growthHires').value;
+    var attritionPct = +document.getElementById('attritionPct').value / 100;
+    var techPct      = +document.getElementById('techPct').value / 100;
+    var opsPct       = +document.getElementById('opsPct').value / 100;
+    var techRate     = +document.getElementById('techRate').value;
+    var opsRate      = +document.getElementById('opsRate').value;
+    var bizRate      = +document.getElementById('bizRate').value;
+
+    var backfill   = Math.round(headcount * attritionPct);
+    var totalHires = growthHires + backfill;
+    var bizPct     = 1 - techPct - opsPct;
+
+    document.getElementById('headcountVal').textContent        = fmt(headcount);
+    document.getElementById('growthHiresVal').textContent      = fmt(growthHires);
+    document.getElementById('attritionPctVal').textContent     = Math.round(attritionPct * 100) + '%';
+    document.getElementById('totalHiresDisplay').textContent   = fmt(totalHires);
+    document.getElementById('totalHiresBreakdown').textContent = fmt(growthHires) + ' incremental + ' + fmt(backfill) + ' backfill';
+    document.getElementById('techPctVal').textContent          = Math.round(techPct * 100) + '%';
+    document.getElementById('opsPctVal').textContent           = Math.round(opsPct * 100) + '%';
+    document.getElementById('techRateVal').textContent         = techRate;
+    document.getElementById('opsRateVal').textContent          = opsRate;
+    document.getElementById('bizRateVal').textContent          = bizRate;
+    document.getElementById('bizPctDisplay').textContent       = Math.max(0, Math.round(bizPct * 100)) + '%';
+
+    if (bizPct < 0) {
+      document.getElementById('note').innerHTML = '<span style="color:#c0401a">&#9888; Technical + Operations % exceed 100%. Adjust so they sum to &le;100%.</span>';
+      document.getElementById('tableBody').innerHTML = '';
+      document.getElementById('metrics').innerHTML = '';
+      return;
+    }
+
+    var needTech = Math.round(totalHires * techPct);
+    var needOps  = Math.round(totalHires * opsPct);
+    var needBiz  = totalHires - needTech - needOps;
+
+    var recTech = 9, recOps = 6, recBiz = 6;
+    var capTech  = recTech * techRate * 4;
+    var capOps   = recOps  * opsRate  * 4;
+    var capBiz   = recBiz  * bizRate  * 4;
+    var capTotal = capTech + capOps + capBiz;
+
+    var rnTech  = recNeeded(needTech, techRate);
+    var rnOps   = recNeeded(needOps,  opsRate);
+    var rnBiz   = recNeeded(needBiz,  bizRate);
+    var rnTotal = rnTech + rnOps + rnBiz;
+
+    var rdTech  = rnTech - recTech;
+    var rdOps   = rnOps  - recOps;
+    var rdBiz   = rnBiz  - recBiz;
+    var rdTotal = rdTech + rdOps + rdBiz;
+
+    var rows = [
+      { name: 'Technical (Eng, Design, Product)', rec: recTech, cap: capTech, need: needTech, rn: rnTech, rd: rdTech },
+      { name: 'Operations',                        rec: recOps,  cap: capOps,  need: needOps,  rn: rnOps,  rd: rdOps  },
+      { name: 'Business (G&amp;A, GTM, Mktg)',    rec: recBiz,  cap: capBiz,  need: needBiz,  rn: rnBiz,  rd: rdBiz  },
+    ];
+
+    document.getElementById('tableBody').innerHTML =
+      rows.map(function(r) {
+        var sl  = r.rd > 0 ? 'Under-resourced' : r.rd < 0 ? 'Surplus' : 'Exact fit';
+        var cls = r.rd > 0 ? 'badge-over' : 'badge-ok';
+        return '<tr>' +
+          '<td style="font-weight:600">' + r.name + '</td>' +
+          '<td>' + r.rec + '</td>' +
+          '<td>' + r.cap + '</td>' +
+          '<td>' + r.need + '</td>' +
+          '<td>' + r.rn + '</td>' +
+          '<td><span class="' + deltaClass(r.rd) + '">' + deltaStr(r.rd) + '</span></td>' +
+          '<td><span class="badge ' + cls + '">' + sl + '</span></td>' +
+          '</tr>';
+      }).join('') +
+      '<tr class="total-row">' +
+        '<td>Total</td>' +
+        '<td>' + (recTech + recOps + recBiz) + '</td>' +
+        '<td>' + capTotal + '</td>' +
+        '<td>' + totalHires + '</td>' +
+        '<td>' + rnTotal + '</td>' +
+        '<td><span class="' + deltaClass(rdTotal) + '">' + deltaStr(rdTotal) + '</span></td>' +
+        '<td><span class="badge ' + (rdTotal > 0 ? 'badge-over' : 'badge-ok') + '">' + (rdTotal > 0 ? 'Under-resourced' : rdTotal < 0 ? 'Surplus' : 'Exact fit') + '</span></td>' +
+      '</tr>';
+
+    var utilPct      = Math.round((totalHires / capTotal) * 100);
+    var offersNeeded = Math.round(totalHires / OFFER_ACCEPTANCE);
+
+    document.getElementById('metrics').innerHTML =
+      '<div class="metric ' + (rdTotal > 0 ? 'over' : 'ok') + '">' +
+        '<div class="metric-label">Total capacity</div>' +
+        '<div class="metric-value">' + capTotal + '</div>' +
+        '<div class="metric-sub">annual hires</div></div>' +
+      '<div class="metric">' +
+        '<div class="metric-label">Hires needed</div>' +
+        '<div class="metric-value">' + fmt(totalHires) + '</div>' +
+        '<div class="metric-sub">' + fmt(growthHires) + ' incremental + ' + fmt(backfill) + ' backfill</div></div>' +
+      '<div class="metric ' + (utilPct > 100 ? 'over' : 'ok') + '">' +
+        '<div class="metric-label">Team utilization</div>' +
+        '<div class="metric-value">' + utilPct + '%</div>' +
+        '<div class="metric-sub">of total capacity</div></div>' +
+      '<div class="metric">' +
+        '<div class="metric-label">Offers to extend</div>' +
+        '<div class="metric-value">~' + fmt(offersNeeded) + '</div>' +
+        '<div class="metric-sub">at 84% acceptance</div></div>' +
+      '<div class="metric ' + (rdTotal > 0 ? 'over' : 'ok') + '">' +
+        '<div class="metric-label">Net recruiter delta</div>' +
+        '<div class="metric-value ' + deltaClass(rdTotal) + '">' + deltaStr(rdTotal) + '</div>' +
+        '<div class="metric-sub">vs. current team</div></div>';
+
+    var surplusRows  = rows.filter(function(r) { return r.rd < 0; });
+    var deficitRows  = rows.filter(function(r) { return r.rd > 0; });
+    var totalSurplus = surplusRows.reduce(function(s, r) { return s + Math.abs(r.rd); }, 0);
+    var totalDeficit = deficitRows.reduce(function(s, r) { return s + r.rd; }, 0);
+    var stillNeeded  = Math.max(0, totalDeficit - totalSurplus);
+    var overStaffed  = Math.max(0, totalSurplus - totalDeficit);
+
+    var exactRows    = rows.filter(function(r) { return r.rd === 0; });
+
+    var flexNote = '';
+    if (surplusRows.length > 0 && deficitRows.length > 0) {
+      var surplusDesc = surplusRows.map(function(r) { return r.name.split(' (')[0] + ' (' + deltaStr(r.rd) + ')'; }).join(', ');
+      var deficitDesc = deficitRows.map(function(r) { return r.name.split(' (')[0] + ' (+' + r.rd + ')'; }).join(', ');
+      flexNote = '<strong>Flex opportunity:</strong> ' + surplusDesc + ' show recruiter surplus — these ' + totalSurplus + ' recruiter' + (totalSurplus > 1 ? 's' : '') + ' can be temporarily redeployed to cover ' + deficitDesc + ' before adding headcount. ';
+      flexNote += stillNeeded > 0
+        ? 'After flexing all surplus, <strong>' + stillNeeded + ' net new recruiter hire' + (stillNeeded > 1 ? 's' : '') + ' still needed</strong>.'
+        : '<strong>Full redeployment covers the gap</strong> — no net new recruiter hires required' + (overStaffed > 0 ? ', with ' + overStaffed + ' recruiter' + (overStaffed > 1 ? 's' : '') + ' still available as buffer.' : '.');
+    } else if (deficitRows.length === 0) {
+      flexNote = '<strong>All functions have sufficient capacity.</strong> Monitor utilization as hiring ramps — if throughput rates drop, gaps may emerge mid-year.';
+    } else if (surplusRows.length === 0 && exactRows.length > 0 && deficitRows.length > 0) {
+      var exactDesc   = exactRows.map(function(r) { return r.name.split(' (')[0]; }).join(', ');
+      var defDesc     = deficitRows.map(function(r) { return r.name.split(' (')[0] + ' (+' + r.rd + ')'; }).join(', ');
+      flexNote = '<strong>' + exactDesc + ' is right-sized</strong> with no surplus to flex. ' + defDesc + ' remain under-resourced — consider contract recruiters or RPO to bridge demand before committing to FTE hires.';
+    } else {
+      flexNote = '<strong>All functions are under-resourced</strong> with no surplus to redeploy. Consider contract recruiters or RPO to bridge demand before committing to FTE hires.';
+    }
+
+    document.getElementById('note').innerHTML =
+      'Attrition backfill = ' + Math.round(attritionPct * 100) + '% &times; ' + fmt(headcount) + ' employees = ' + fmt(backfill) + ' hires. ' +
+      'Business = remaining ' + Math.round(bizPct * 100) + '% of mix (' + needBiz + ' hires).' +
+      '<br><br>' + flexNote;
+  }
+
+  render();
+</script>
+</body>
+</html>
