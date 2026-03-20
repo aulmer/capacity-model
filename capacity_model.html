@@ -133,8 +133,8 @@
     <div class="card">
       <div class="card-label">Incremental hires</div>
       <div class="ctrl-row">
-        <input type="range" id="growthHires" min="200" max="1200" step="25" value="600">
-        <span class="ctrl-val" id="growthHiresVal">600</span>
+        <input type="range" id="incrementalHires" min="200" max="1200" step="25" value="600">
+        <span class="ctrl-val" id="incrementalHiresVal">600</span>
       </div>
     </div>
     <div class="card">
@@ -149,7 +149,7 @@
         <div class="card-label" style="margin-bottom:2px;">Total hires needed</div>
         <div class="derived-val" id="totalHiresDisplay">700</div>
       </div>
-      <div class="derived-sub" id="totalHiresBreakdown">600 growth + 100 backfill</div>
+      <div class="derived-sub" id="totalHiresBreakdown">600 incremental + 100 backfill</div>
     </div>
   </div>
 
@@ -233,7 +233,7 @@
 <script>
   var OFFER_ACCEPTANCE = 0.84;
 
-  ['headcount','growthHires','attritionPct','techPct','opsPct','techRate','opsRate','bizRate'].forEach(function(id) {
+  ['headcount','incrementalHires','attritionPct','techPct','opsPct','techRate','opsRate','bizRate'].forEach(function(id) {
     document.getElementById(id).addEventListener('input', render);
   });
 
@@ -244,7 +244,7 @@
 
   function render() {
     var headcount    = +document.getElementById('headcount').value;
-    var growthHires  = +document.getElementById('growthHires').value;
+    var incrementalHires  = +document.getElementById('incrementalHires').value;
     var attritionPct = +document.getElementById('attritionPct').value / 100;
     var techPct      = +document.getElementById('techPct').value / 100;
     var opsPct       = +document.getElementById('opsPct').value / 100;
@@ -253,14 +253,14 @@
     var bizRate      = +document.getElementById('bizRate').value;
 
     var backfill   = Math.round(headcount * attritionPct);
-    var totalHires = growthHires + backfill;
+    var totalHires = incrementalHires + backfill;
     var bizPct     = 1 - techPct - opsPct;
 
     document.getElementById('headcountVal').textContent        = fmt(headcount);
-    document.getElementById('growthHiresVal').textContent      = fmt(growthHires);
+    document.getElementById('incrementalHiresVal').textContent      = fmt(incrementalHires);
     document.getElementById('attritionPctVal').textContent     = Math.round(attritionPct * 100) + '%';
     document.getElementById('totalHiresDisplay').textContent   = fmt(totalHires);
-    document.getElementById('totalHiresBreakdown').textContent = fmt(growthHires) + ' growth + ' + fmt(backfill) + ' backfill';
+    document.getElementById('totalHiresBreakdown').textContent = fmt(incrementalHires) + ' incremental + ' + fmt(backfill) + ' backfill';
     document.getElementById('techPctVal').textContent          = Math.round(techPct * 100) + '%';
     document.getElementById('opsPctVal').textContent           = Math.round(opsPct * 100) + '%';
     document.getElementById('techRateVal').textContent         = techRate;
@@ -336,7 +336,7 @@
       '<div class="metric">' +
         '<div class="metric-label">Hires needed</div>' +
         '<div class="metric-value">' + fmt(totalHires) + '</div>' +
-        '<div class="metric-sub">' + fmt(growthHires) + ' growth + ' + fmt(backfill) + ' backfill</div></div>' +
+        '<div class="metric-sub">' + fmt(incrementalHires) + ' incremental + ' + fmt(backfill) + ' backfill</div></div>' +
       '<div class="metric ' + (utilPct > 100 ? 'over' : 'ok') + '">' +
         '<div class="metric-label">Team utilization</div>' +
         '<div class="metric-value">' + utilPct + '%</div>' +
